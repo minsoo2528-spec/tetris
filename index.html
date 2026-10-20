@@ -1,0 +1,24 @@
+<!doctype html><meta charset=utf-8><title>Tetris</title>
+<body style="background:#111;color:#eee;font:16px sans-serif;text-align:center">
+<p id=s>0</p><canvas id=c width=200 height=400 style="border:1px solid #555"></canvas>
+<p>←→ 이동 · ↑ 회전 · ↓ 내리기 · Space 즉시낙하</p>
+<script>
+const C=c.getContext('2d'),W=10,H=20,Z=20,col=['','#0ff','#ff0','#a0f','#00f','#f80','#f00','#0f0'],
+T=[[[1,1,1,1]],[[1,1],[1,1]],[[0,1,0],[1,1,1]],[[1,0,0],[1,1,1]],[[0,0,1],[1,1,1]],[[1,1,0],[0,1,1]],[[0,1,1],[1,1,0]]];
+let B,p,sc=0;const E=()=>[...Array(H)].map(()=>Array(W).fill(0));B=E();
+function hit(dx,dy,m){return m.some((r,y)=>r.some((v,x)=>{let X=p.x+x+dx,Y=p.y+y+dy;return v&&(X<0||X>=W||Y>=H||B[Y][X])}))}
+function nw(){let i=Math.random()*7|0;p={m:T[i].map(r=>r.map(v=>v&&i+1)),x:3,y:0};if(hit(0,0,p.m)){B=E();sc=0}}
+function lock(){p.m.forEach((r,y)=>r.forEach((v,x)=>{if(v)B[p.y+y][p.x+x]=v}));B=B.filter(r=>r.some(v=>!v));let n=H-B.length;sc+=n*n*100;while(B.length<H)B.unshift(Array(W).fill(0));nw()}
+function drop(){hit(0,1,p.m)?lock():p.y++}
+function draw(){C.fillStyle='#000';C.fillRect(0,0,200,400);
+const d=(x,y,v)=>{if(v){C.fillStyle=col[v];C.fillRect(x*Z,y*Z,Z-1,Z-1)}};
+B.forEach((r,y)=>r.forEach((v,x)=>d(x,y,v)));p.m.forEach((r,y)=>r.forEach((v,x)=>d(p.x+x,p.y+y,v)));s.textContent='점수 '+sc}
+onkeydown=e=>{let k=e.key;
+if(k=='ArrowLeft'&&!hit(-1,0,p.m))p.x--;
+if(k=='ArrowRight'&&!hit(1,0,p.m))p.x++;
+if(k=='ArrowDown')drop();
+if(k=='ArrowUp'){let m=p.m[0].map((_,i)=>p.m.map(r=>r[i]).reverse());if(!hit(0,0,m))p.m=m}
+if(k==' '){while(!hit(0,1,p.m))p.y++;lock()}
+if(k.startsWith('Arrow')||k==' ')e.preventDefault();draw()};
+nw();draw();setInterval(()=>{drop();draw()},500);
+</script>
